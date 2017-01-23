@@ -10,14 +10,15 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * KUrlUtil.
  */
 
 public class KUrlUtil {
-    private static Logger logger = Logger.getLogger(KUrlUtil.class);
+    private static Logger logger = LoggerFactory.getLogger(KUrlUtil.class);
  
     public static String encode(String url) 
     		throws MalformedURLException, URISyntaxException {
@@ -49,7 +50,7 @@ public class KUrlUtil {
             	fragment = URLDecoder.decode(fragment, "UTF-8");
             }
 		} catch (UnsupportedEncodingException e) {
-            logger.error(e);
+            logger.error(e.getMessage(), e);
 		}
 
         URI uri = new URI(protocol, authority, path, query, fragment);

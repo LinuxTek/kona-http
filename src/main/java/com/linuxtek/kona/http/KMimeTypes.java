@@ -379,6 +379,44 @@ public class KMimeTypes {
             
         case "audio/x-caf":
             return "caf";
+            
+        // documents
+        case "text/plain":
+            return "txt";
+            
+        case "text/html":
+            return "html";
+            
+        case "application/pdf":
+            return "pdf";
+            
+        case "text/vcard":
+        case "text/x-vcard":
+            return "vcf";
+            
+        case "text/calendar":
+            return "ics";
+            
+        case "text/vcalendar":
+        case "text/x-vcalendar":
+            return "vcs";
+            
+        case "text/rtf":
+        case "application/rtf":
+            return "rtf";
+            
+        case "text/richtext":
+            return "rtx";
+            
+        case "application/json":
+            return "json";
+            
+        case "application/javascript":
+            return "js";
+            
+        case "text/css":
+            return "css";
+                
                 
         default:
         	return null;

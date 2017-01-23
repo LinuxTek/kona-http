@@ -67,6 +67,7 @@ public class KMultiPartFileSender {
 	private HttpServletResponse response;
 	private String disposition = CONTENT_DISPOSITION_INLINE;
     private String contentType = null;
+    private String fileName = null;
     private File tempFile = null;
 
 	public KMultiPartFileSender() {
@@ -77,9 +78,15 @@ public class KMultiPartFileSender {
 	}
     
 	public static KMultiPartFileSender fromBytes(byte[] data, String contentType) {
+        return KMultiPartFileSender.fromBytes(data, contentType, null);
+	}
+    
+	public static KMultiPartFileSender fromBytes(byte[] data, String contentType, String fileName) {
         String extension = null;
+        
         if (contentType != null) {
         	extension = KMimeTypes.getExtension(contentType);
+            
             if (extension != null) {
             	extension = "." + extension;
             }
@@ -87,8 +94,8 @@ public class KMultiPartFileSender {
         
         logger.debug("creating temp file with extension: ", extension);
         
-        
         File f = null;
+        
 		try {
 			f = KFileUtil.writeTempFile(data, extension);
 		} catch (IOException e) {
@@ -98,6 +105,7 @@ public class KMultiPartFileSender {
 		return new KMultiPartFileSender()
 				//.setFilepath(f.toPath())
 				.setTempFile(f)
+				.withFileName(fileName)
 				.withContentType(contentType);
 	}
 	
@@ -128,6 +136,11 @@ public class KMultiPartFileSender {
 		return this;
 	}
     
+	private KMultiPartFileSender withFileName(String fileName) {
+		this.fileName = fileName;
+        return this;
+	}
+    
 	public KMultiPartFileSender withDispositionInline() {
 		forceDisposition(CONTENT_DISPOSITION_INLINE);
 		return this;
@@ -153,6 +166,8 @@ public class KMultiPartFileSender {
 		this.tempFile = tempFile;
 		return setFilepath(tempFile.toPath());
 	}
+    
+	
 
 	private void forceDisposition(String disposition) {
 		this.disposition = disposition;
@@ -178,7 +193,11 @@ public class KMultiPartFileSender {
 		}
 
 		Long length = Files.size(filepath);
-		String fileName = filepath.getFileName().toString();
+        
+        if (fileName == null) {
+        	fileName = filepath.getFileName().toString();
+        }
+        
 		long lastModified = Files.getLastModifiedTime(filepath).toMillis();
         
 		if (contentType == null) {
@@ -188,11 +207,16 @@ public class KMultiPartFileSender {
 		// Validate request headers for caching ---------------------------------------------------
 		// If-None-Match header should contain "*" or ETag. If so, then return 304.
 		String ifNoneMatch = request.getHeader(IF_NONE_MATCH);
+        
 		if (nonNull(ifNoneMatch) && matches(ifNoneMatch, fileName)) {
 			logger.error("If-None-Match header should contain \"*\" or ETag. If so, then return 304.");
+            
 			response.setHeader(ETAG, fileName); // Required in 304.
+            
 			response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
+            
 			cleanup();
+            
 			return;
 		}
 
