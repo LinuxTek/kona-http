@@ -2,9 +2,19 @@
  * Copyright (C) 2011 LINUXTEK, Inc.  All Rights Reserved.
  */
 package com.linuxtek.kona.http;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.tika.config.TikaConfig;
 
 /*
 import net.sf.jmimemagic.Magic;
@@ -20,21 +30,14 @@ import org.apache.tika.detect.DefaultDetector;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MimeType;
+import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;
 
 import com.linuxtek.kona.util.KFileUtil;
 
-import java.util.List;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
-
 public class KMimeTypes {
-	private static Logger logger = Logger.getLogger(KMimeTypes.class);
+	private static Logger logger = LoggerFactory.getLogger(KMimeTypes.class);
 	
     private static Map<String,List<String>> mimeTypeMap = new HashMap<String,List<String>>();
 
@@ -276,6 +279,13 @@ public class KMimeTypes {
 		}
     }
     
+    public static String getExtensionByTika(String contentType) throws IOException, MimeTypeException {
+    	TikaConfig config = TikaConfig.getDefaultConfig();
+    	MimeType mimeType = config.getMimeRepository().forName(contentType);
+    	String extension = mimeType.getExtension();
+        return extension;
+    }
+    
     public static String getExtension(String contentType) {
         switch(contentType) {
         // images
@@ -419,7 +429,14 @@ public class KMimeTypes {
                 
                 
         default:
-        	return null;
+            String extension = null;
+            try {
+            	extension = getExtensionByTika(contentType);
+                return extension;
+            } catch (Exception e) {
+            	logger.error(e.getMessage(), e);
+                return null;
+            }
         }
     }
     
