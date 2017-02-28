@@ -110,6 +110,8 @@ public class KMimeTypes {
             "text/html",
             "text/plain",
             "text/xml",
+            "text/vcard",
+            "text/x-vcard",
             "application/javascript",
             "application/json",
     };
